@@ -24,4 +24,4 @@ npm run lint
 See [Configuration Reference](https://cli.vuejs.org/config/).
 
 ### start serser
-npm json-server --watch db.json
+json-server --watch db.json

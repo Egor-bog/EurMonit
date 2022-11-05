@@ -2,13 +2,12 @@
     <div id="wrapper"></div>
     <splitpanes style="height: 80vh" class="default-theme">
         <pane min-size="20" max-size="70" size="30">
-            <splitpanes horizontal>
-                <pane  v-if="pointsItem.length > 0" style="background: rgba(141, 137, 137, 0.507)" min-size="50" max-size="100" size="100">
-                    <PointsTable :point_data="pointsItem"></PointsTable>
+            <splitpanes horizontal style="height: 100%">
+                <pane  v-if="pointsItem.length > 0" style="background: rgba(141, 137, 137, 0.507)"  size="80">
+                    <PointsTable :point_data="pointsItem" @toggle="toggleVisible"></PointsTable>
                 </pane>
-                <pane  style="background: rgba(141, 137, 137, 0.507)">
-                </pane>
-                <pane  style="background: rgba(141, 137, 137, 0.507)">
+                <pane  style="background: rgba(141, 137, 137, 0.507)"  size="20">
+                    <PopupEditPoint v-show="poppupVisible"></PopupEditPoint>  
                 </pane>
             </splitpanes>
         </pane>
@@ -30,7 +29,7 @@ import 'leaflet-geosearch/dist/geosearch.css';
 const { Splitpanes, Pane } = require('splitpanes');
 import 'splitpanes/dist/splitpanes.css'
 
-import PointsTable from '@/components/UI/PointsTable.vue'
+import PointsTable from '@/components/PointsTable.vue'
 
 delete Icon.Default.prototype._getIconUrl;
 Icon.Default.mergeOptions({
@@ -38,11 +37,6 @@ Icon.Default.mergeOptions({
   iconUrl: require('leaflet/dist/images/marker-icon.png'),
   shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
 });
-
-
-
-
-
 
 export default {
     name: 'MapPage',
@@ -57,7 +51,8 @@ export default {
         return {
             map : Object,
             layerMyMarker: new LMap.LayerGroup(),
-            searchPoint: {}
+            searchPoint: {},
+            poppupVisible: false
         }
     },
     computed: {
@@ -67,13 +62,17 @@ export default {
         })
     },
     methods : {
-
         ...mapMutations({
             SET_MAP_INSTANCE: 'map/SET_MAP_INSTANCE'
         }),
         ...mapActions({
             GET_POINTSITEM_API: 'map/GET_POINTSITEM_API'
         }),
+
+        toggleVisible (toggle) {
+            this.poppupVisible = toggle
+        },
+
         renderMap () {
             this.map = LMap.map(this.$refs.MapConteiner, {
 			center: [53.903731, 27.565384],
@@ -105,12 +104,9 @@ export default {
   
         },
         addMarkers() {
-
             for (const point of this.pointsItem) {
                 const marker = LMap.marker(new LMap.LatLng(point.latitude, point.longitude), { title: point.point_name })
                 this.layerMyMarker.addLayer(marker);
-                
-                
             }
         }
     },

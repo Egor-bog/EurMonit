@@ -20,16 +20,12 @@
                 </svg>
             </div>
         </div>
-        <div class="popupPointMenu" id="tooltip">
-            ПРИВЕТ {{popupPointID}}
-        </div>
     </div>
 </template>
 
 <script>
     import { mapActions } from 'vuex'
-
-
+    
 
     export default {
         name: 'PointsTable',
@@ -45,7 +41,8 @@
                 popupPointID: null,
             }
         },
-
+        components: {
+        },
 
         methods: {
             ...mapActions({
@@ -56,6 +53,7 @@
                 this.popupPointID = this.togglePoint ? id : null
                 this.button = document.querySelector(`#popup${id}`)
                 this.tooltip = document.querySelector('#tooltip') 
+                this.$emit('toggle', this.togglePoint )
             },
         },  
 
@@ -70,6 +68,9 @@
 
 <style scoped>
 
+.table container {
+position: relative;
+}
 .table {
     width: 100%;
     height: 100%;
