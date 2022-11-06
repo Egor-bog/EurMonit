@@ -1,17 +1,20 @@
 <template>
     <div id="wrapper"></div>
-    <splitpanes style="height: 80vh" class="default-theme">
+    <splitpanes style="height: 90vh" class="default-theme">
         <pane min-size="20" max-size="70" size="30">
             <splitpanes horizontal style="height: 100%">
-                <pane  v-if="pointsItem.length > 0" style="background: rgba(141, 137, 137, 0.507)"  size="80">
-                    <PointsTable :point_data="pointsItem" @toggle="toggleVisible"></PointsTable>
+                <pane size="70">
+                    <div class="conteiner-userPoints">
+                        <PointsTable v-if="pointsItem.length > 0" :point_data="pointsItem" @selectItem="selectItem"></PointsTable>
+                        <button class="btn btn-primary" type="button" @click="toggleIsOpen">Добавить точку</button>
+                    </div>
                 </pane>
                 <pane  style="background: rgba(141, 137, 137, 0.507)"  size="20">
-                    <PopupEditPoint v-show="poppupVisible"></PopupEditPoint>  
+                    <PopupEditPoint  v-if="isOpen"  :setID="this.oldID" ></PopupEditPoint>  
                 </pane>
             </splitpanes>
         </pane>
-        <pane style="background: #002233;" min-size="20" max-size="80" >
+        <pane style="background: #002233;" size="70" >
             <div id="map" ref="MapConteiner" ></div>
         </pane>
     </splitpanes>
@@ -25,6 +28,7 @@ import { mapActions, mapMutations, mapState } from 'vuex'
 import { OpenStreetMapProvider } from 'leaflet-geosearch';
 import * as GeoSearch from 'leaflet-geosearch';
 import 'leaflet-geosearch/dist/geosearch.css';
+import { ref } from 'vue'
 
 const { Splitpanes, Pane } = require('splitpanes');
 import 'splitpanes/dist/splitpanes.css'
@@ -46,14 +50,22 @@ export default {
         Pane,
         PointsTable
     },
+    setup() {
+        const isOpen = ref(false)
+        const oldID = ref(null)
+        const toggleIsOpen = () => {
+            isOpen.value = !isOpen.value
+        }
+
+        return { isOpen, oldID, toggleIsOpen }
+    },
 
     data() {
         return {
             map : Object,
             layerMyMarker: new LMap.LayerGroup(),
-            searchPoint: {},
-            poppupVisible: false
-        }
+            
+         }
     },
     computed: {
         ...mapState({
@@ -68,11 +80,18 @@ export default {
         ...mapActions({
             GET_POINTSITEM_API: 'map/GET_POINTSITEM_API'
         }),
-
-        toggleVisible (toggle) {
-            this.poppupVisible = toggle
+        selectItem (id) {
+            if (this.oldID != id) {
+                this.oldID = id;
+                this.isOpen = true
+            } else {
+                this.oldID = null
+                this.isOpen = false
+            } 
         },
-
+        addPoint () {
+            this.visibleEdit = !this.visibleEdit
+        },
         renderMap () {
             this.map = LMap.map(this.$refs.MapConteiner, {
 			center: [53.903731, 27.565384],
@@ -83,7 +102,6 @@ export default {
                 attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
             })
             tileLayer.addTo(this.map)
-
 
             const search = new GeoSearch.GeoSearchControl({
             provider: new OpenStreetMapProvider(),
@@ -141,6 +159,15 @@ export default {
     width: 100vw; 
 }
 
+
+.conteiner-userPoints {
+    height: 100%;
+    width: 100%;
+    background: #d4d4d4;
+    display: flex; 
+    flex-direction: column;
+    align-content: space-between;
+}
 
 .listUserPoints {
     display: flex;
